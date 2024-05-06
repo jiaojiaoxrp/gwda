@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/electricbubble/gwda"
+	"github.com/jiaojiaoxrp/gwda"
 )
 
 func main() {
