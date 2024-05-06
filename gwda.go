@@ -675,6 +675,12 @@ func NewElementAttribute() ElementAttribute {
 	return make(ElementAttribute)
 }
 
+// WithIndex Element's index
+func (ea ElementAttribute) WithIndex(index int) ElementAttribute {
+	ea["index"] = index
+	return ea
+}
+
 // WithUID Element's unique identifier
 func (ea ElementAttribute) WithUID(uid string) ElementAttribute {
 	ea["UID"] = uid
