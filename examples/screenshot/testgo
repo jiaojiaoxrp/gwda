@@ -1,0 +1,211 @@
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"strings"
+	"time"
+
+	timezoneLookup "github.com/jiaojiaoxrp/gwda/examples/screenshot/utils"
+	"github.com/ringsaturn/tzf"
+)
+
+var f tzf.F
+
+func init() {
+	var err error
+	f, err = tzf.NewDefaultFinder()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func main() {
+
+	// fmt.Println(f.GetTimezoneName(116.3883, 39.9289))
+	// fmt.Println(f.GetTimezoneName(-73.935242, 40.730610))
+	// fmt.Println(f.GetTimezoneName(-122.4194, 37.7749))
+
+	// //lat := 37.7749
+	// //lng := -122.4194
+
+	// // UTC 时间戳
+	// utcTimestamp := int64(1716409800)
+
+	// // 将时间戳转换为 time.Time 对象
+	// utcTime := time.Unix(utcTimestamp, 0)
+
+	// // 加载洛杉矶时区
+	// location, err := time.LoadLocation("America/Los_Angeles")
+	// if err != nil {
+	// 	fmt.Println("Error loading location:", err)
+	// 	return
+	// }
+
+	// // 将 UTC 时间转换为洛杉矶时间
+	// losAngelesTime := utcTime.In(location)
+
+	// // 打印洛杉矶的日期和时间
+	// fmt.Println("Los Angeles time1:", losAngelesTime)
+
+	// // 加载洛杉矶时区
+	// location, err = time.LoadLocation("Etc/GMT+8")
+	// if err != nil {
+	// 	fmt.Println("Error loading location:", err)
+	// 	return
+	// }
+
+	// // 将 UTC 时间转换为洛杉矶时间
+	// losAngelesTime = utcTime.In(location)
+
+	// fmt.Println("Los Angeles time2:", losAngelesTime)
+
+	// // 打印洛杉矶的日期和时间
+	// fmt.Println("Los Angeles time:", losAngelesTime)
+
+	// var tzc timezoneLookup.Timezonecache
+	// f, err := os.Open("timezone.data")
+	// if err != nil {
+	// 	fmt.Printf("Error opening timezone cache file: %v\n", err)
+	// 	return // 如果文件无法打开，则直接返回
+	// }
+	// defer f.Close()
+
+	// if err = tzc.Load(f); err != nil {
+	// 	fmt.Println("Error loading timezone cache:", err)
+	// 	return // 如果加载失败，则直接返回
+	// }
+	// defer tzc.Close()
+
+	// //旧金山
+	// //lat := 37.7749
+	// //lng := -122.4194
+
+	// //纽约
+	// //lat:=40.7128
+	// //lng:=-74.0060
+
+	// //上海
+	// //lat:=31.2304
+	// //lng:=121.4737
+
+	// //los angeles
+	// //lat:=34.0522
+	// //lng:=-118.2437
+
+	// //corna
+	// //lat:=33.87642
+	// //lng:=-117.54469
+
+	// lat := 36.19360780181852
+	// lng := 90.42528208886124
+
+	// result, err := tzc.Search(lat, lng)
+	// if err != nil {
+	// 	fmt.Println("Error finding timezone:", err)
+	// 	return // 如果搜索失败，则直接返回
+	// }
+
+	// // 打印出详细的结果信息
+	// fmt.Printf("Search result: %+v\n", result)
+	// // 初始化时区查找器
+	// tz, err := timezoneLookup.LoadTimezones()
+	// if err != nil {
+	// 	fmt.Println("Error loading timezones:", err)
+	// 	return
+	// }
+
+	// // 示例经纬度
+	// latitude := 40.712776
+	// longitude := -74.005974
+
+	// // 根据经纬度获取时区
+	// // 根据经纬度获取时区
+	// zone, err := tz.GetZone(timezoneLookup.Coord{Lat: latitude, Lon: longitude})
+	// if err != nil {
+	// 	log.Fatal("Error finding timezone:", err)
+	// }
+
+	// // 获取当前时间
+	// now := time.Now()
+
+	// // 将当前时间转换到对应的时区
+	// loc, err := time.LoadLocation(zone)
+	// if err != nil {
+	// 	fmt.Println("Error loading location:", err)
+	// 	return
+	// }
+
+	// localTime := now.In(loc)
+	// fmt.Printf("Local time in latitude %.2f and longitude %.2f is: %s\n", latitude, longitude, localTime)
+
+	//return
+
+	for i := 0; i < 100000; i++ {
+
+		//url := "https://flex-capacity-na.amazon.com/GetOffersForProviderPost"
+		//url := "https://flex-capacity-na.amazon.com/eligibleServiceAreas"
+		//url = "https://flex-capacity-na.amazon.com/getOfferFiltersOptions"
+		//url = "https://flex-capacity-na.amazon.com/schedule/blocks/1716289200"
+		//url = "https://flex-capacity-na.amazon.com/regions/12"
+		// 创建请求数据
+		//jsonData := `{"apiVersion":"V2","serviceAreaIds":["5e0dc474-f2cc-4e30-b4db-ee420678461e"],"filters":{"timeFilter":{"startTime":"00:00"},"deliveryRequestFilter":{"orderCount":0,"deliveryRequestCount":0},"serviceAreaFilter":[]}}`
+		//jsonData, _ := json.Marshal(map[string]int{"pickUpTime": 1716289200})
+		// 创建HTTP请求
+		//req, err := http.NewRequest("GET", url, bytes.NewBuffer([]byte(jsonData)))
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			fmt.Println("Error creating request:", err)
+			return
+		}
+
+		token := "Atna|EwICIDUkTz-bLFiJsIPEOl7tWeAJmOHAw_8hZX5rRhHle22lkehj4v_LJa62bDxmN0q16HAtkj0mCAYGC4-hGOCf6c9DZjq0lE8YPyxcUievD1EbIwJTyX-HSSMx1_QhveKdKuEZggo3zjiEsBsDWbOmndb7qMy8_oDlIuH7E9DbvwnR1O08ixNkmSWTln9fAmdEewQ6FPl2JkGoW82q8G4HkYvT0KKnaK2fJD3KK2wD7bqb1b3EtwnXa34PhqXQmxYCcpMQbFc4GsS6dnWyO_KjeGVAJMBkfPWJHYgK2yOeWu7nOg"
+		// 设置HTTP头部
+		req.Header.Set("Host", "flex-capacity-na.amazon.com")
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("x-amz-access-token", token)
+
+		req.Header.Set("Authorization", "RABBIT3-HMAC-SHA256 SignedHeaders=x-amz-access-token;x-amz-date,Signature=7a7f64ab35cfd63df8ebd42cf0b94bc5b3d0d5bdac43fbbfd7ef1f7af7d00638")
+		req.Header.Set("X-Amz-Date", "20240520T175901Z")
+		req.Header.Set("x-flex-instance-id", "A30D1951-2749-4BD4-9B37-4D540991A468")
+		req.Header.Set("Signature-Input", `x-amzn-attest=("@path" "x-amzn-marketplace-id" "user-agent");created=1716227941;nonce=1716227941;alg="apple-attest";keyid="AQICAHg21E9N4cqPKrpywXBTFl2Ivrk5dxuqSkVKL5WYaXPSMgHFrzNT7/afBqmH7vbkCQSpAAABLTCCASkGCSqGSIb3DQEHBqCCARowggEWAgEAMIIBDwYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAx3npftO9KcMfrV/RQCARCAgeHfZ75KfNrXTEQJF8/SiCDqKEq99/lh4etxx8y6nTuhnG7nr2F4b+X2FFF8TXpXVxVpCh9bchHyoU7wcTbUs+0iJ+fpFZ+u1KiopwtDpBXXUM1eCWalLGpgCdqHXopQ5tFly8eA5o7jay48kMGdSv+ovUWtt5sQISrR0jPq+iMiE2tIbOGEvCJrP+h1m3e5aT6C11ccUJ+TRKFkvFtA0WDQ/M/PZ6F/d8P6/jwBm1zFIpfScrL/IYRXNM+Ytc5ZWF/xqL3dk5MrtuYBLbNopDxRcCSCJcEDcEl6mYVVsGnrVDM="`)
+		req.Header.Set("Signature", `x-amzn-attest=:omlzaWduYXR1cmVYRzBFAiBTVtX0Y3KAzZ+mhm4FuE3hDeD14TqImByALIXBr5jTuQIhAI/7gbCTRhjT0sIz9qVrXFqftE+AyRCzyTyLkA9OYmKHcWF1dGhlbnRpY2F0b3JEYXRhWCXt88KFLRuYQz1vU7XiPPZORFHIzbxYsF/oQgfG99Nl+UAAAAs0:`)
+		req.Header.Set("Accept-Language", "en-US")
+		req.Header.Set("User-Agent", "iOS/17.5 (iPhone Darwin) Model/iPhone Platform/iPhone15,3 RabbitiOS/2.130.1")
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Cookie", `session-id=134-5979310-9703832; session-id-time=2082787201l; session-token=kkaJP/NNpwbmFdkpZNMvFOf4MiV0eRDzhCJnu9bIsPEy8OkNGGM120858qnCFRvxfP+tjWTcOpgqVwjYVmQ9WZkgR0wFUH+VPcqoETDECVp4XpcZHzCB1pHwRH3ANkXpQZzUAxoP0puM0x4mf+0HqkaPCMcyi9nceb+m/obqB2CMMgYFpptSKgF7EczmLXi4UMwjvZ86jyG3pStVsystdkKOGwAJwYI205TKAzCielIlnf4wy0si9q+9TmhTyGSA75bDf5stuLHzho7CPqx5r3Ab7Vx8bC9moID2fYcgmdkLteGJhqcooZoMuRSStUJpX/boLhFjfTQv5rzmHURUufEjBte1p+jKWe18jecTDt8IHtPG+KM/n21XqXirTroc; at-main="Atza|IwEBIOo1AgNWazhwYUIbsQmFioqbOzvMP-cAGZ_yyM_KlrhCowH310V3OePVG6F7G4K5pMTnmFnop7o6m6sEw99MNZIROwq-0vDxDcOBSqcwo7KsuXEuGcb0woBX8aHqFceZJDWjnD03ug2QUXYb2QCcZ2FpcBwROpTfdSRy0oG-2okxWIPfMglFZT4j7xo2Z4gazouJDLtJvanfaZHMwC8IDOTf5tKya59HBhFv8QkIGHSbsmqXLMov_WzCZVPkgoXDnDOXNcSIFdOSw5Hf7bhefn7tBSPhIBtbFdfzkcxTgan80Flf_qGI5zOYoApd4jm1FgtWTt4Cpfp4Bo3ktAOwtgUDnptg2tq7TsmPNvCfP1zbMSyooYfM0TUaL7DBiOaCrb8cnv2_5HPEiQ1NPwWumz81"; sess-at-main="pMcI/3wwOBekLK0+mAuYKs84/acP+53Lvaf//d3SDlY="; ubid-main=134-1112723-6442120; x-main="@S1MsbKR4bARwp4hrjwE7urby1LMGbnuyMe5Tg?@F6zdER8Hoqhjm0Y7RgUCCP?J"; lc-main=en_US; i18n-prefs=USD; sp-cdn=J4F7`)
+		req.Header.Set("x-amzn-marketplace-id", "ATVPDKIKX0DER")
+
+		// 发送请求
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			fmt.Println("Error making request:", err)
+			return
+		}
+		defer resp.Body.Close()
+
+		// 读取响应
+		body, err := io.ReadAll(io.Reader(resp.Body))
+		if err != nil {
+			fmt.Println("Error reading response body:", err)
+			return
+		}
+
+		fmt.Println("Response code:", resp.StatusCode)
+
+		result := string(body)
+		// 打印响应
+		fmt.Println(result)
+		if strings.Contains(result, "Message") {
+			break
+		}
+
+		i++
+		fmt.Println(time.Now(), i)
+		time.Sleep(5 * time.Second)
+
+	}
+}

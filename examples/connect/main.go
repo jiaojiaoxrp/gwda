@@ -16,5 +16,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
+
+
 	log.Println(driver.IsWdaHealthy())
 }

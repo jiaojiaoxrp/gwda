@@ -1,0 +1,106 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net"
+	"net/http"
+	"net/url"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+func main() {
+
+	// 定义代理服务器地址
+	proxyStr := "http://104.35.18.91:8080" // 替换为实际的代理服务器地址和端口
+	proxyURL, err := url.Parse(proxyStr)
+	if err != nil {
+		fmt.Printf("解析代理URL出错: %v\n", err)
+		return
+	}
+
+	// 创建HTTP客户端并设置代理
+	transport := &http.Transport{
+		Proxy: http.ProxyURL(proxyURL),
+	}
+	client := &http.Client{
+		Transport: transport,
+	}
+
+	// 创建HTTP GET请求
+	response, err := client.Get("https://api.myip.com")
+	if err != nil {
+		fmt.Printf("请求出错: %v\n", err)
+		return
+	}
+	defer response.Body.Close()
+
+	// 读取响应体
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		fmt.Printf("读取响应出错: %v\n", err)
+		return
+	}
+
+	// 打印原始响应体
+	fmt.Printf("原始响应: %s\n", body)
+
+	// 定义一个结构来解析JSON
+	var result map[string]string
+
+	// 解析JSON
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		fmt.Printf("解析JSON出错: %v\n", err)
+		return
+	}
+
+	// 打印解析后的结果
+	fmt.Printf("IP地址: %s\n", result["ip"])
+	fmt.Printf("国家: %s\n", result["country"])
+	fmt.Printf("国家代码: %s\n", result["cc"])
+
+	r := gin.Default()
+
+	r.GET("/client-ip", func(c *gin.Context) {
+		clientIP := getClientIP(c)
+		c.JSON(200, gin.H{
+			"client_ip": clientIP,
+		})
+	})
+
+	r.Run(":8181")
+}
+
+func getClientIP(c *gin.Context) string {
+	// 获取 X-Forwarded-For 头信息
+	xForwardedFor := c.Request.Header.Get("X-Forwarded-For")
+	if xForwardedFor != "" {
+		// 拆分多个 IP 地址
+		ips := strings.Split(xForwardedFor, ",")
+		// 返回第一个有效的 IP 地址
+		for _, ip := range ips {
+			ip = strings.TrimSpace(ip)
+			if isValidIP(ip) {
+				return ip
+			}
+		}
+	}
+
+	// 获取 X-Real-IP 头信息
+	xRealIP := c.Request.Header.Get("X-Real-IP")
+	if xRealIP != "" && isValidIP(xRealIP) {
+		return xRealIP
+	}
+
+	// 返回直接连接的客户端 IP 地址
+	return c.ClientIP()
+}
+
+// 验证 IP 地址格式是否有效
+func isValidIP(ip string) bool {
+	return net.ParseIP(ip) != nil
+}

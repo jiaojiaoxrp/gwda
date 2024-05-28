@@ -1,0 +1,102 @@
+package main
+
+import (
+	"crypto/tls"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"net/url"
+	"regexp"
+	"time"
+
+	"github.com/elazarl/goproxy"
+)
+
+func main() {
+
+	// 示例时间戳，以毫秒为单位
+	timestampMillis := int64(1715971500)
+
+	// 调用函数进行转换
+	standardTime := ConvertTimestampToTime(timestampMillis)
+
+	// 输出标准时间
+	fmt.Println("标准时间:", standardTime)
+
+	proxy := goproxy.NewProxyHttpServer()
+	proxy.Verbose = true
+
+	caCert, err := ioutil.ReadFile("rootCA.pem")
+	if err != nil {
+		log.Fatalf("Failed to read rootCA.pem: %v", err)
+	}
+	caKey, err := ioutil.ReadFile("rootCA.key")
+	if err != nil {
+		log.Fatalf("Failed to read rootCA.key: %v", err)
+	}
+	mitmCert, err := tls.X509KeyPair(caCert, caKey)
+	if err != nil {
+		log.Fatalf("Failed to parse key pair: %v", err)
+	}
+
+	proxy.OnRequest(goproxy.ReqHostMatches(regexp.MustCompile(`^www\.baidu\.com$`))).
+		HandleConnect(goproxy.AlwaysMitm)
+
+	proxy.OnRequest(goproxy.ReqHostMatches(regexp.MustCompile(`^www\.baidu\.com$`))).
+		DoFunc(func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+			u, err := url.Parse("http://www.sohu.com")
+			if err != nil {
+				return req, goproxy.NewResponse(req, goproxy.ContentTypeText, http.StatusInternalServerError, "invalid redirect URL")
+			}
+			req.URL = u
+			return req, nil
+		})
+
+	proxy.OnRequest().HandleConnect(goproxy.AlwaysMitm)
+	proxy.OnRequest().DoFunc(func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+		log.Printf("Request URL: %v", req.URL)
+		return req, nil
+	})
+
+	server := &http.Server{
+		Addr:    ":9999",
+		Handler: proxy,
+		TLSConfig: &tls.Config{
+			Certificates: []tls.Certificate{mitmCert},
+		},
+	}
+
+	log.Fatal(server.ListenAndServeTLS("rootCA.pem", "rootCA.key"))
+}
+
+// ConvertTimestampToTime 将毫秒时间戳转换为标准时间
+func ConvertTimestampToTime(timestamp int64) time.Time {
+	return time.Unix(timestamp, 0).UTC()
+}
+
+func mainxx() {
+
+	proxy := goproxy.NewProxyHttpServer()
+	proxy.Verbose = true
+
+	// 加载中间人证书和私钥
+	mitmCert, err := tls.LoadX509KeyPair("mitm.pem", "mitm.key")
+	if err != nil {
+		log.Fatalf("无法加载中间人证书和私钥: %v", err)
+	}
+
+	// 配置 MITM 证书
+	proxy.OnRequest(goproxy.ReqHostIs("www.baidu.com:443")).HandleConnect(goproxy.AlwaysMitm)
+	goproxy.GoproxyCa = mitmCert
+
+	proxy.OnRequest(goproxy.ReqHostIs("www.baidu.com:443")).DoFunc(
+		func(r *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+			r.URL.Scheme = "http"
+			r.URL.Host = "www.sohu.com"
+			r.URL.Path = "/"
+			return r, nil
+		})
+
+	log.Fatal(http.ListenAndServe(":9999", proxy))
+}
